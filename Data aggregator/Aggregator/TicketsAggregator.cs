@@ -1,7 +1,6 @@
-﻿using UglyToad.PdfPig.Content;
-using UglyToad.PdfPig;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
+using Data_aggregator.FileAccess;
 using Data_aggregator.Utilities;
 
 namespace Data_aggregator.Aggregator;
@@ -88,43 +87,5 @@ public class TicketsAggregator
         return ticketData;
     }
 
-    private void SaveTicketData(StringBuilder stringBuilder)
-    {
 
-    }
-}
-
-public interface IDocumentsReader
-{
-   IEnumerable<string> Read(string directory);
-}
-
-public class DocumentsReader : IDocumentsReader
-{
-    public IEnumerable<string> Read(string directory)
-    {
-        foreach (var filePath in Directory.GetFiles(directory, "*.pdf"))
-        {
-            using PdfDocument document = PdfDocument.Open(filePath);
-            Page page = document.GetPage(1);
-            yield return page.Text;
-        }
-    }
-}
-
-
-public interface IFileWriter
-{
-    void Write(string content, params string[] pathParts);
-}
-
-
-public class FileWriter : IFileWriter
-{
-    public void Write(string content, params string[] pathParts)
-    {
-        var resultFilePath = Path.Combine(pathParts);
-        File.WriteAllText(resultFilePath, content);
-        Console.WriteLine($"Results saved to {resultFilePath}");
-    }
 }
