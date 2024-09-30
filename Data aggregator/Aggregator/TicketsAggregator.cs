@@ -9,6 +9,8 @@ namespace Data_aggregator.Aggregator;
 public class TicketsAggregator
 {
     private readonly string _ticketsFolder;
+    private readonly FileWriter _fileWriter;
+    private readonly IDocumentsReader _documentsReader;
 
     //domain mapping
     private readonly Dictionary<string, CultureInfo> _domainToCultureMapping = new()
@@ -18,9 +20,11 @@ public class TicketsAggregator
         [".jp"] = new CultureInfo("ja-JP"),
     };
 
-    public TicketsAggregator(string ticketsFolder)
+    public TicketsAggregator(string ticketsFolder, FileWriter fileWriter, IDocumentsReader documentsReader)
     {
         _ticketsFolder = ticketsFolder;
+        _fileWriter = fileWriter;
+        _documentsReader = documentsReader;
     }
 
 
@@ -28,25 +32,24 @@ public class TicketsAggregator
     {
         var stringBuilder = new StringBuilder();
 
-        foreach (var filePath in Directory.GetFiles(_ticketsFolder, "*.pdf"))
-        {
-            using PdfDocument document = PdfDocument.Open(filePath);
-            Page page = document.GetPage(1);
+        var ticketDocuments = _documentsReader.Read(_ticketsFolder);
 
-            var lines = ProcessPage(page);
+        foreach (var document in ticketDocuments)
+        {
+            var lines = ProcessDocument(document);
             stringBuilder.AppendLine(string.Join(Environment.NewLine, lines));
 
         }
-        SaveTicketData(stringBuilder);
+
+        _fileWriter.Write(stringBuilder.ToString(), _ticketsFolder, "tickets.txt");
     }
 
 
 
-    private IEnumerable<string> ProcessPage(Page page)
+    private IEnumerable<string> ProcessDocument(string document)
     {
-        string text = page.Text;
-
-        var split = text.Split(
+ 
+        var split = document.Split(
             new[] { "Title:", "Date:", "Time:", "Visit us:" }, StringSplitOptions.None
             );
 
@@ -91,6 +94,24 @@ public class TicketsAggregator
     }
 }
 
+public interface IDocumentsReader
+{
+   IEnumerable<string> Read(string directory);
+}
+
+public class DocumentsReader : IDocumentsReader
+{
+    public IEnumerable<string> Read(string directory)
+    {
+        foreach (var filePath in Directory.GetFiles(directory, "*.pdf"))
+        {
+            using PdfDocument document = PdfDocument.Open(filePath);
+            Page page = document.GetPage(1);
+            yield return page.Text;
+        }
+    }
+}
+
 
 public interface IFileWriter
 {
@@ -100,7 +121,7 @@ public interface IFileWriter
 
 public class FileWriter : IFileWriter
 {
-    void IFileWriter.Write(string content, params string[] pathParts)
+    public void Write(string content, params string[] pathParts)
     {
         var resultFilePath = Path.Combine(pathParts);
         File.WriteAllText(resultFilePath, content);

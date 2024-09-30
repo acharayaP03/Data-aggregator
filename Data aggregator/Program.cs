@@ -7,7 +7,10 @@ const string TicketsFolder = @"D:\dotnet\Data aggregator\Tickets";
 
 try
 {
-    var ticketsAggregator = new TicketsAggregator(TicketsFolder);
+    var ticketsAggregator = new TicketsAggregator(
+        TicketsFolder, 
+        new FileWriter(), 
+        new DocumentsReader());
 
     ticketsAggregator.Run();
 }
