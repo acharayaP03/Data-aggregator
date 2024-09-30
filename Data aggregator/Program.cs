@@ -1,7 +1,10 @@
-﻿Console.WriteLine("------------------------ Data Aggregator -----------------------------");
+﻿using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig;
+
+Console.WriteLine("------------------------ Data Aggregator -----------------------------");
 
 
-const string TicketsFolder = @"";
+const string TicketsFolder = @"D:\dotnet\Data aggregator\Tickets";
 
 try
 {
@@ -31,6 +34,10 @@ public class TicketsAggregator
 
     public void Run()
     {
-        throw new NotImplementedException();
+        using (PdfDocument document = PdfDocument.Open(_ticketsFolder + @"\Tickets1.pdf"))
+        {
+            Page page = document.GetPage(1);
+            string text = page.Text;
+        }
     }
 }
