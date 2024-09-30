@@ -1,4 +1,6 @@
-﻿Console.WriteLine("------------------------ Data Aggregator -----------------------------");
+﻿using Data_aggregator.Aggregator;
+
+Console.WriteLine("------------------------ Data Aggregator -----------------------------");
 
 
 const string TicketsFolder = @"D:\dotnet\Data aggregator\Tickets";

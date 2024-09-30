@@ -2,6 +2,9 @@
 using UglyToad.PdfPig;
 using System.Globalization;
 using System.Text;
+using Data_aggregator.Utilities;
+
+namespace Data_aggregator.Aggregator;
 
 public class TicketsAggregator
 {
@@ -48,7 +51,7 @@ public class TicketsAggregator
             );
 
         // extract domain for culture mapping
-        var domain = ExtractDomain(split.Last());
+        var domain = split.Last().ExtractDomain();
         var ticketCulture = _domainToCultureMapping[domain];
 
         for (int i = 1; i < split.Length - 3; i += 3)
@@ -57,7 +60,8 @@ public class TicketsAggregator
         }
     }
 
-    private string BuildTicket(string[] split, int i, CultureInfo ticketCulture)
+
+    private static string BuildTicket(string[] split, int i, CultureInfo ticketCulture)
     {
         var title = split[i];
         var dateAsString = split[i + 1];
@@ -83,14 +87,23 @@ public class TicketsAggregator
 
     private void SaveTicketData(StringBuilder stringBuilder)
     {
-        var outputFilePath = Path.Combine(_ticketsFolder, "aggregatedTickets.txt");
-        File.WriteAllText(outputFilePath, stringBuilder.ToString());
-        Console.WriteLine($"Results saved to {outputFilePath}");
-    }
 
-    private static string  ExtractDomain(string webAddress)
+    }
+}
+
+
+public interface IFileWriter
+{
+    void Write(string content, params string[] pathParts);
+}
+
+
+public class FileWriter : IFileWriter
+{
+    void IFileWriter.Write(string content, params string[] pathParts)
     {
-        var lastDotIndex = webAddress.LastIndexOf('.');
-        return webAddress.Substring(lastDotIndex);
+        var resultFilePath = Path.Combine(pathParts);
+        File.WriteAllText(resultFilePath, content);
+        Console.WriteLine($"Results saved to {resultFilePath}");
     }
 }
